@@ -1,0 +1,161 @@
+#!/bin/sh
+#
+# chkconfig: 3 99 1
+# processname: vos_search_server
+# pidfile: /var/run/vos_search_server.pid
+# description: Start and stop vos_search_server proc.
+#
+### BEGIN INIT INFO
+# Provides: vos_search_server
+# Required-Start: $local_fs $remote_fs $network
+# Required-Stop: $local_fs $remote_fs $network
+# Default-Start: 3
+### END INIT INFO
+
+# Source function library.
+if [ -f /etc/init.d/functions ]; then
+        . /etc/init.d/functions
+elif [ -f /etc/rc.d/init.d/functions ]; then
+        . /etc/rc.d/init.d/functions
+else
+        exit 0
+fi
+
+# Avoid using root's TMPDIR
+unset TMPDIR
+
+# Source networking configuration.
+. /etc/sysconfig/network
+
+# Check that networking is up.
+[ ${NETWORKING} = "no" ] && exit 0
+
+RETVAL=0
+
+PIDFILE="/var/run/vos_search_server.pid"
+SS_HOME=/root
+KIND="vos_search_server"
+LOCKFILE="/var/lock/subsys/vos_search_server"
+
+start()
+{
+        echo -en $"\e[33;40mStarting $KIND service: "
+        $MOVE_TO_COL
+        if [ -f $PIDFILE ]; then
+                PID=`cat $PIDFILE`
+                [ -d /proc/$PID ] && { echo -e "\e[31;40m[FAILED]\e[0;39m"; return 1; }
+        fi
+        /usr/bin/nohup $SS_HOME/vos_search_server >/var/log/vos_search_server.log &
+        echo "$!" > $PIDFILE
+        RET=$?
+        cd - >/dev/null 2>&1
+        touch $LOCKFILE >/dev/null 2>&1
+        if [ $RET = 0 ]; then
+                sleep 5
+                if [ -f $PIDFILE ]; then
+                        PID=`cat $PIDFILE`
+                        if [ -d /proc/$PID ]; then
+                                kill -HUP $PID
+                        fi
+                fi
+                echo -e "\e[32;40m[  OK  ]\e[0;39m"
+        else
+                echo -e "\e[31;40m[FAILED]\e[0;39m"
+        fi
+        return 0
+}
+
+stop()
+{
+        echo -en $"\e[33;40mShutting down $KIND service: "
+        $MOVE_TO_COL
+        if [ -f $PIDFILE ]; then
+                PID=`cat $PIDFILE`
+                if [ -d /proc/$PID ]; then
+                        kill $PID >/dev/null 2>&1
+                        STRTMP="i"
+                        while [ -d /proc/$PID ]
+                        do
+                                sleep 1
+                                STRTMP=$STRTMP"i"
+                                if [ "$STRTMP" = "iiiiiiiiiiiiii" ]; then
+                                        break
+                                fi
+                        done
+                        if [ -d /proc/$PID ]; then
+                                kill -9 $PID >/dev/null 2>&1
+                                echo -en "\e[34;40m[TERMINATED]"
+                        else
+                                echo -en "\e[32;40m[  OK  ]"
+                        fi
+                        sleep 2
+                else
+                        echo -en "\e[31;40m[FAILED]"
+                fi
+                rm -f $PIDFILE
+        else
+                echo -en "\e[31;40m[FAILED]"
+        fi
+        [ -f $LOCKFILE ] && { rm -f $LOCKFILE; }
+        echo -e "\e[0;39m"
+}
+
+restart()
+{
+        stop
+        start
+}
+
+reload()
+{
+        echo -en $"\e[33;40mReloading $KIND configuration: "
+        if [ -f $PIDFILE ]; then
+                PID=`cat $PIDFILE`
+                if [ -d /proc/$PID ]; then
+                        kill -USR1 $PID
+                        echo -e "\e[32;40m[  OK  ]\e[0;39m"
+                        return 0
+                fi
+        fi
+        echo -e "\e[31;40m[FAILED]\e[0;39m"
+        return 1
+}
+
+reparse()
+{
+        echo -en $"\e[33;40mReloading $KIND license info: "
+        if [ -f $PIDFILE ]; then
+                PID=`cat $PIDFILE`
+                if [ -d /proc/$PID ]; then
+                        kill -HUP $PID
+                        echo -e "\e[32;40m[  OK  ]\e[0;39m"
+                        return 0
+                fi
+        fi
+        echo -e "\e[31;40m[FAILED]\e[0;39m"
+        return 1
+}
+
+case "$1" in
+        start)
+                start
+                ;;
+        stop)
+                stop
+                ;;
+        restart)
+                restart
+                ;;
+        reload)
+                reload
+                ;;
+        reparse)
+                reparse
+                ;;
+        *)
+                echo $"Usage: $0 {start|stop|restart|reload|reparse}"
+                exit 1
+                ;;
+esac
+
+exit $?
