@@ -1,7 +1,8 @@
 package main
 
 /*
-	VOS送来主叫为x号码被叫为b号码，先在redis里查找 是否有subid，如有走：2.4.2.1绑定更新请求
+	编译为linux环境：
+	CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build vos_search_server.go
 */
 
 import (
