@@ -80,7 +80,7 @@ func http_up_number(mobilenum string, nclass int) (int, string) {
 
 	b, err := json.Marshal(post_str)
 	if err != nil {
-		return 0, "line 71"
+		return 0, "marshal json error"
 	}
 	body := bytes.NewBuffer(b)
 
@@ -88,18 +88,18 @@ func http_up_number(mobilenum string, nclass int) (int, string) {
 	client := &http.Client{}
 	req, err := http.NewRequest("POST", addr, body)
 	if err != nil {
-		return 0, "line 80"
+		return 0, "http post quest error"
 	}
 
 	req.Header.Set("Content-Type", contentType)
 	resq, err := client.Do(req)
 	if err != nil {
-		return 0, "line 85"
+		return 0, "do quest error"
 	}
 	buf, err := ioutil.ReadAll(resq.Body)
 	resq.Body.Close()
 	if err != nil {
-		return 0, "line 90"
+		return 0, "read quest body error"
 	}
 	fmt.Println(string(buf))
 
@@ -107,7 +107,7 @@ func http_up_number(mobilenum string, nclass int) (int, string) {
 	buf = bytes.TrimPrefix(buf, []byte("\xef\xbb\xbf"))
 	err = json.Unmarshal(buf, &res)
 	if err != nil {
-		return 0, "line 98"
+		return 0, "unmarshal json error"
 	}
 
 	return res.Code, res.Message
