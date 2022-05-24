@@ -3,6 +3,7 @@ package main
 /*
 	编译为linux环境：
 	CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build vos_search_server.go
+	环境需要装redis服务 yum -y install redis
 */
 
 import (
@@ -183,6 +184,5 @@ func http_update_number(w http.ResponseWriter, r *http.Request) {
 func main() {
 	fmt.Println("starting......")
 	redis_client = Redis_connect_server("127.0.0.1:6379")
-	init_http_client(9200) //启动http生产
-	//http_axb_request()				//手动测试接口
+	init_http_client(9200)
 }
