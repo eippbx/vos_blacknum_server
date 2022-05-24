@@ -1,15 +1,16 @@
 package main
 
-//	连接VOS没问题
-//	编译 :
-//	CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build vos_search_up.go
+/*
+	编译 :
+	CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build vos_search_up.go
+*/
+
 import (
 	"bytes"
 	"encoding/json"
 	"flag"
 	"fmt"
 	"github.com/jinzhu/gorm"
-	_ "github.com/jinzhu/gorm/dialects/mysql"
 	"io/ioutil"
 	"net/http"
 	"strconv"
@@ -22,14 +23,7 @@ type Cdr struct {
 }
 
 var date = flag.String("date", "20220501", "日期格式:20220501")
-
-/*
-	linux shell获取前一天的日期：date -d yesterday +%Y%m%d
-	shell:
-		ydate=$(date -d "yesterday" +%Y%m%d)
-		echo ${ydate}
-		./vos_seach -date ${ydate}
-*/
+var addr string = "http://39.103.219.47:9200/update"
 
 func main() {
 
@@ -44,7 +38,6 @@ func main() {
 	flag.Parse()
 	fmt.Println("date ", *date)
 
-	//sql := "select id,calleee164,calleeaccesse164 as num from e_cdr_"+yestoday+" where calleee164 like \"BlackNum%\" limit 10 "
 	sql := "select id,calleee164,calleeaccesse164 as num from e_cdr_" + *date + " where calleee164 like \"BlackNum%\" "
 	db.Raw(sql).Scan(&cdrs)
 	fmt.Println("SQL:", sql)
@@ -90,9 +83,7 @@ func http_up_number(mobilenum string, nclass int) (int, string) {
 		return 0, "line 71"
 	}
 	body := bytes.NewBuffer(b)
-	//fmt.Println(body)
 
-	addr := "http://39.103.219.47:9200/update"
 	contentType := "application/json;charset=utf-8"
 	client := &http.Client{}
 	req, err := http.NewRequest("POST", addr, body)
