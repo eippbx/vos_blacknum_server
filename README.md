@@ -15,7 +15,7 @@ CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build vos_search_up.go
 > 加到crontab服务里，设定每天早上1点进行上报
 
 ```bash
-1 1 * * * /root/vos_search_up.sh
+0 1 * * * /root/vos_search_up.sh
 ```
 
 ### 服务端程序编译：
