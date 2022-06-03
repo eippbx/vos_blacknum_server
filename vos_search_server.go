@@ -134,13 +134,22 @@ func http_black_check(w http.ResponseWriter, r *http.Request) {
 		//fmt.Println("Called-非手机号")
 		return
 	}
-	err = redis_client.Get(called).Err()
+	//err = redis_client.Get(called).Err()
+	resa, err := redis_client.Get(called).Result()
 	if err != nil {
 		w.Write([]byte(fmt.Sprintf("{\"RewriteE164Rsp\":{\"callId\":%d,\"callerE164\":\"%s\",\"calleeE164\":\"%s\"}}", callId, callere164, res.RewriteE164Req.CalleeE164)))
 	} else {
-		w.Write([]byte(fmt.Sprintf("{\"RewriteE164Rsp\":{\"callId\":%d,\"callerE164\":\"%s\",\"calleeE164\":\"Black_%s\"}}", callId, callere164, res.RewriteE164Req.CalleeE164)))
+		switch {
+		case resa == "1":
+			w.Write([]byte(fmt.Sprintf("{\"RewriteE164Rsp\":{\"callId\":%d,\"callerE164\":\"%s\",\"calleeE164\":\"Black_D%s\"}}", callId, callere164, res.RewriteE164Req.CalleeE164)))
+		case resa == "2":
+			w.Write([]byte(fmt.Sprintf("{\"RewriteE164Rsp\":{\"callId\":%d,\"callerE164\":\"%s\",\"calleeE164\":\"Black_Z%s\"}}", callId, callere164, res.RewriteE164Req.CalleeE164)))
+		case resa == "3":
+			w.Write([]byte(fmt.Sprintf("{\"RewriteE164Rsp\":{\"callId\":%d,\"callerE164\":\"%s\",\"calleeE164\":\"Black_G%s\"}}", callId, callere164, res.RewriteE164Req.CalleeE164)))
+		default:
+			w.Write([]byte(fmt.Sprintf("{\"RewriteE164Rsp\":{\"callId\":%d,\"callerE164\":\"%s\",\"calleeE164\":\"Black_%s\"}}", callId, callere164, res.RewriteE164Req.CalleeE164)))
+		}
 	}
-
 	return
 }
 
