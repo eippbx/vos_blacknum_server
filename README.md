@@ -2,7 +2,7 @@
 vos黑名单查询缓存
 > 运行环境为Centos 6x/7x Redis
 
-##VOS3000客户机：
+## VOS3000客户机：
 ```不需要安装环境。```
 ### vos机器运行的程序编译：
 ```bash
@@ -20,7 +20,7 @@ CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build vos_search_up.go
 0 1 * * * /root/vos_search_up.sh
 ```
 
-##黑名单服务器：
+## 黑名单服务器：
 ```yum -y install redis```
 
 ### 服务端程序编译：
